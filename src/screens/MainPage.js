@@ -6,62 +6,187 @@ import {
 	TouchableOpacity,
 	ImageBackground,
 	ScrollView,
+	ActivityIndicator,
+	Modal,
 } from "react-native";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import TripCard from "../components/TripCard";
 
+const API_URL = "http://192.168.0.100:7093/api";
+
 const MainPage = ({ navigation }) => {
-	//TYMCZASOWO
+	const [loadedTrips, setLoadedTrips] = useState([]);
+	const [isLoading, setIsLoading] = useState(true);
 
-	const trips = [
-		{
-			image:
-				"https://images.unsplash.com/photo-1513026705753-bc3fffca8bf4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8OXx8bG9uZG9ufGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
-			tripName: "London",
-			startDate: "15.11.2022",
-			endDate: "25.11.2022",
-		},
-		{
-			image:
-				"https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NHx8QmFyY2Vsb25hfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
-			tripName: "Barcelona",
-			startDate: "21.01.2023",
-			endDate: "25.01.2023",
-		},
-		{
-			image:
-				"https://images.unsplash.com/photo-1552832230-c0197dd311b5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8Um9tZXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60",
-			tripName: "Rome",
-			startDate: "24.02.2023",
-			endDate: "20.03.2023",
-		},
-	];
+	const fetchTripsHandler = useCallback(async () => {
+		try {
+			const response = await fetch(`${API_URL}/trips/all?userId=1`); //tymczasowo
 
-	const userOngoingTrip = (
-		<TripCard
-			image={trips[2].image}
-			tripName={trips[2].tripName}
-			startDate={trips[2].startDate}
-			endDate={trips[2].endDate}
-			navigation={navigation}
-		/>
-	);
+			if (!response.ok) {
+				throw new Error("Nie udało się pobrać wycieczek.");
+			}
 
-	const userTrips = trips.map((trip) => {
-		return (
-			<TripCard
-				image={trip.image}
-				tripName={trip.tripName}
-				startDate={trip.startDate}
-				endDate={trip.endDate}
-				navigation={navigation}
-			/>
-		);
+			const responseData = await response.json();
+			setLoadedTrips(responseData);
+			setIsLoading(false);
+		} catch (error) {
+			alert(error.message);
+		}
+	}, []);
+
+	async function addTripHandler(trip) {
+		const response = await fetch(`${API_URL}/trips/add`, {
+			method: "POST",
+			body: JSON.stringify(trip),
+			headers: {
+				"Content-Type": "application/json",
+			},
+		});
+		if (!response.ok) {
+			throw new Error("Nie udało się dodać wycieczki.");
+		}
+	}
+
+	async function onAddHandler(trip) {
+		try {
+			await addTripHandler(trp);
+		} catch (error) {
+			alert(error.message);
+		}
+		fetchTripsHandler();
+	}
+
+	async function editTripHandler(trip) {
+		const response = await fetch(`${API_URL}/trips/update`, {
+			method: "PUT",
+			body: JSON.stringify(trip),
+			headers: {
+				"Content-Type": "application/json",
+			},
+		});
+		if (!response.ok) {
+			throw new Error("Nie udało się zaktualizować wycieczki.");
+		}
+	}
+
+	async function onEditHandler(trip) {
+		try {
+			await editTripHandler(trip);
+		} catch (error) {
+			alert(error.message);
+		}
+		fetchTripsHandler();
+	}
+
+	async function deleteTripHandler(id) {
+		const response = await fetch(`${API_URL}/trips/delete/${id}`, {
+			method: "DELETE",
+		});
+		if (!response.ok) {
+			throw new Error("Nie udało się usunąć wycieczki.");
+		}
+	}
+
+	async function onDeleteHandler(id) {
+		try {
+			await deleteTripHandler(id);
+		} catch (error) {
+			alert(error.message);
+		}
+		fetchTripsHandler();
+	}
+
+	useEffect(() => {
+		fetchTripsHandler();
+	}, [fetchTripsHandler]);
+
+	// useEffect(() => {
+	// 	console.log(loadedTrips);
+	// }, [loadedTrips]);
+
+	const currentDate = new Date();
+
+	const userPastTrips = loadedTrips.map((trip) => {
+		const startDate = new Date(trip.startDate);
+		const endDate = new Date(trip.endDate);
+		if (currentDate > endDate) {
+			return (
+				<TripCard
+					key={trip.tripId}
+					tripId={trip.tripId}
+					tripName={trip.tripName}
+					tripDescription={trip.tripDescription}
+					startDate={trip.startDate}
+					endDate={trip.endDate}
+					coordinate={trip.coordinate}
+					city={trip.city}
+					country={trip.country}
+					navigation={navigation}
+				/>
+			);
+		}
+	});
+
+	const userFutureTrips = loadedTrips.map((trip) => {
+		const startDate = new Date(trip.startDate);
+		const endDate = new Date(trip.endDate);
+		if (currentDate < startDate) {
+			return (
+				<TripCard
+					key={trip.tripId}
+					tripId={trip.tripId}
+					tripName={trip.tripName}
+					tripDescription={trip.tripDescription}
+					startDate={trip.startDate}
+					endDate={trip.endDate}
+					coordinate={trip.coordinate}
+					city={trip.city}
+					country={trip.country}
+					navigation={navigation}
+					activities={trip.activities}
+				/>
+			);
+		}
+	});
+
+	const userOngoingTrips = loadedTrips.map((trip) => {
+		const startDate = new Date(trip.startDate);
+		const endDate = new Date(trip.endDate);
+		if (currentDate <= endDate && currentDate >= startDate) {
+			return (
+				<TripCard
+					key={trip.tripId}
+					tripId={trip.tripId}
+					tripName={trip.tripName}
+					tripDescription={trip.tripDescription}
+					startDate={trip.startDate}
+					endDate={trip.endDate}
+					coordinate={trip.coordinate}
+					city={trip.city}
+					country={trip.country}
+					navigation={navigation}
+					activities={trip.activities}
+				/>
+			);
+		}
 	});
 
 	return (
 		<View style={styles.container}>
+			<Modal
+				transparent={true}
+				animationType={"none"}
+				visible={isLoading}
+				style={{ zIndex: 1100 }}
+				onRequestClose={() => {}}
+			>
+				<View style={styles.modalBackground}>
+					<View style={styles.activityIndicatorWrapper}>
+						<ActivityIndicator animating={isLoading} color="black" />
+					</View>
+				</View>
+			</Modal>
 			<View style={styles.imageWrapper}>
 				<ImageBackground
 					style={styles.headerImageIconStyle}
@@ -72,14 +197,24 @@ const MainPage = ({ navigation }) => {
 					<Text style={styles.myTripsText}>My Trips</Text>
 				</ImageBackground>
 			</View>
-			<TouchableOpacity style={styles.roundButton}>
+			<TouchableOpacity
+				style={styles.roundButton}
+				onPress={() => {
+					navigation.navigate("AddTrip", {
+						navigation,
+						onAddHandler,
+					});
+				}}
+			>
 				<Text style={styles.roundButtonText}>+</Text>
 			</TouchableOpacity>
 			<ScrollView>
+				<Text style={styles.headers}>Future Trips</Text>
+				{userFutureTrips}
 				<Text style={styles.headers}>Ongoing Trip</Text>
-				{userOngoingTrip}
+				{userOngoingTrips}
 				<Text style={styles.headers}>Past Trips</Text>
-				{userTrips}
+				{userPastTrips}
 			</ScrollView>
 		</View>
 	);
@@ -139,6 +274,23 @@ const styles = StyleSheet.create({
 		fontWeight: "bold",
 		marginLeft: "2%",
 		marginTop: "2%",
+	},
+	modalBackground: {
+		flex: 1,
+		alignItems: "center",
+		flexDirection: "column",
+		justifyContent: "space-around",
+		backgroundColor: "#rgba(0, 0, 0, 0.5)",
+		zIndex: 1000,
+	},
+	activityIndicatorWrapper: {
+		backgroundColor: "#rgba(0, 0, 0, 0)",
+		height: 100,
+		width: 100,
+		borderRadius: 10,
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "space-around",
 	},
 });
 

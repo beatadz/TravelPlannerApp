@@ -7,19 +7,32 @@ import {
 	ImageBackground,
 	ScrollView,
 } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Overview from "../components/Overview";
 import Gallery from "../components/Gallery";
 import Spending from "../components/Spending";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import AddActivity from "../components/AddActivity";
 
 const Tab = createMaterialTopTabNavigator();
 
 const Trip = ({ route }) => {
-	const { tripName, image, startDate, endDate } = route.params;
+	const {
+		tripId,
+		tripName,
+		tripDescription,
+		startDate,
+		endDate,
+		coordinate,
+		city,
+		country,
+		navigation,
+		image,
+	} = route.params;
 
 	return (
 		<View style={styles.container}>
+			{/* {isAddFormOpen ? <Add setIsAddFormOpen={setIsAddFormOpen} /> : null} */}
 			<View style={styles.imageWrapper}>
 				<ImageBackground
 					style={styles.headerImageIconStyle}
@@ -28,7 +41,9 @@ const Trip = ({ route }) => {
 					}}
 				>
 					<Text style={styles.myTripsText}>{tripName}</Text>
-					<Text style={styles.date}>{`${startDate} - ${endDate}`}</Text>
+					<Text
+						style={styles.date}
+					>{`${startDate} - ${endDate} ${city}, ${country}`}</Text>
 				</ImageBackground>
 			</View>
 			<Tab.Navigator
@@ -38,11 +53,16 @@ const Trip = ({ route }) => {
 					//tabBarActiveTintColor: "black",
 				}}
 			>
-				<Tab.Screen name="Overview" component={Overview} />
+				<Tab.Screen
+					name="Overview"
+					children={() => <Overview tripId={tripId} navigation={navigation} />}
+				/>
 				<Tab.Screen name="Gallery" component={Gallery} />
-				<Tab.Screen name="Spending" component={Spending} />
+				<Tab.Screen
+					name="Spending"
+					children={() => <Spending tripId={tripId} navigation={navigation} />}
+				/>
 			</Tab.Navigator>
-			<ScrollView></ScrollView>
 		</View>
 	);
 };
