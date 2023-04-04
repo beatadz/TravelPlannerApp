@@ -116,11 +116,14 @@ const Spending = ({ tripId, navigation }) => {
 
 	const ExpensesByCategories = expensesByCategory.map((category) => {
 		return (
-			<View style={styles.day} key={category.expenseName}>
+			<View style={styles.day} key={category.expenseId}>
 				<Text style={styles.categoryTitle}>{category[0].category}</Text>
 				{category.map((expense) => {
 					return (
-						<View key={expense.expenseId} style={styles.expenseNames}>
+						<View
+							key={expense.expenseName + expense.expenseId}
+							style={styles.expenseNames}
+						>
 							<View style={styles.expenseContainer}>
 								<Image style={styles.moneyIcon} source={require(MONEY_ICON)} />
 								<Text style={styles.expenseTitle}>{expense.expenseName}</Text>

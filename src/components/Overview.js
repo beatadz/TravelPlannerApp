@@ -19,7 +19,7 @@ const Overview = ({ tripId, navigation }) => {
 		try {
 			const response = await fetch(
 				`${API_URL}/activities/all?tripId=${tripId}`
-			); //tymczasowo
+			);
 
 			if (!response.ok) {
 				throw new Error("Nie udało się pobrać zadań.");

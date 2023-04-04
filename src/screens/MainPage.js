@@ -8,20 +8,54 @@ import {
 	ScrollView,
 	ActivityIndicator,
 	Modal,
+	BackHandler,
+	Alert,
 } from "react-native";
 import { useCallback, useEffect, useState } from "react";
+import { useIsFocused } from "@react-navigation/native";
 
 import TripCard from "../components/TripCard";
 
 const API_URL = "http://192.168.0.100:7093/api";
 
-const MainPage = ({ navigation }) => {
+const MainPage = ({ route }) => {
+	const { userId, navigation } = route.params;
 	const [loadedTrips, setLoadedTrips] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
+	console.log(userId);
+	const isFocused = useIsFocused();
+
+	useEffect(() => {
+		if (isFocused) {
+			BackHandler.addEventListener("hardwareBackPress", () => {
+				Alert.alert(
+					"Exit App",
+					"Do you want to leave the app?",
+					[
+						{
+							text: "Cancel",
+							onPress: () => {
+								console.log("cancel");
+							},
+							style: "cancel",
+						},
+						{
+							text: "Ok",
+							onPress: () => BackHandler.exitApp(),
+						},
+					],
+					{
+						cancelable: false,
+					}
+				);
+				return true;
+			});
+		}
+	}, [isFocused]);
 
 	const fetchTripsHandler = useCallback(async () => {
 		try {
-			const response = await fetch(`${API_URL}/trips/all?userId=1`); //tymczasowo
+			const response = await fetch(`${API_URL}/trips/all?userId=${userId}`); //tymczasowo
 
 			if (!response.ok) {
 				throw new Error("Nie udało się pobrać wycieczek.");
@@ -50,7 +84,7 @@ const MainPage = ({ navigation }) => {
 
 	async function onAddHandler(trip) {
 		try {
-			await addTripHandler(trp);
+			await addTripHandler(trip);
 		} catch (error) {
 			alert(error.message);
 		}
@@ -107,7 +141,7 @@ const MainPage = ({ navigation }) => {
 
 	const currentDate = new Date();
 
-	const userPastTrips = loadedTrips.map((trip) => {
+	let userPastTrips = loadedTrips.map((trip) => {
 		const startDate = new Date(trip.startDate);
 		const endDate = new Date(trip.endDate);
 		if (currentDate > endDate) {
@@ -123,12 +157,13 @@ const MainPage = ({ navigation }) => {
 					city={trip.city}
 					country={trip.country}
 					navigation={navigation}
+					photoUrl={trip.photoUrl}
 				/>
 			);
 		}
 	});
 
-	const userFutureTrips = loadedTrips.map((trip) => {
+	let userFutureTrips = loadedTrips.map((trip) => {
 		const startDate = new Date(trip.startDate);
 		const endDate = new Date(trip.endDate);
 		if (currentDate < startDate) {
@@ -145,12 +180,13 @@ const MainPage = ({ navigation }) => {
 					country={trip.country}
 					navigation={navigation}
 					activities={trip.activities}
+					photoUrl={trip.photoUrl}
 				/>
 			);
 		}
 	});
 
-	const userOngoingTrips = loadedTrips.map((trip) => {
+	let userOngoingTrips = loadedTrips.map((trip) => {
 		const startDate = new Date(trip.startDate);
 		const endDate = new Date(trip.endDate);
 		if (currentDate <= endDate && currentDate >= startDate) {
@@ -167,10 +203,78 @@ const MainPage = ({ navigation }) => {
 					country={trip.country}
 					navigation={navigation}
 					activities={trip.activities}
+					photoUrl={trip.photoUrl}
 				/>
 			);
 		}
 	});
+
+	useEffect(() => {
+		userFutureTrips = userFutureTrips.filter(function (element) {
+			return element !== undefined;
+		});
+		userOngoingTrips = userOngoingTrips.filter(function (element) {
+			return element !== undefined;
+		});
+		userPastTrips = userPastTrips.filter(function (element) {
+			return element !== undefined;
+		});
+	}, [userFutureTrips, userOngoingTrips, userPastTrips]);
+
+	useEffect(() => {
+		console.log(userOngoingTrips);
+	}, [userFutureTrips, userOngoingTrips, userPastTrips]);
+
+	const FutureTripsComponent = () => {
+		userFutureTrips = userFutureTrips.filter(function (element) {
+			return element !== undefined;
+		});
+		const isArrayEmpty = !(userFutureTrips.length !== 0);
+		return (
+			<>
+				{!isArrayEmpty && (
+					<>
+						<Text style={styles.headers}>Future Trips</Text>
+						{userFutureTrips}
+					</>
+				)}
+			</>
+		);
+	};
+
+	const OngoingTripsComponent = () => {
+		userOngoingTrips = userOngoingTrips.filter(function (element) {
+			return element !== undefined;
+		});
+		const isArrayEmpty = !(userOngoingTrips.length !== 0);
+		return (
+			<>
+				{!isArrayEmpty && (
+					<>
+						<Text style={styles.headers}>Ongoing Trip</Text>
+						{userOngoingTrips}
+					</>
+				)}
+			</>
+		);
+	};
+
+	const PastTripsComponent = () => {
+		userPastTrips = userPastTrips.filter(function (element) {
+			return element !== undefined;
+		});
+		const isArrayEmpty = !(userPastTrips.length !== 0);
+		return (
+			<>
+				{!isArrayEmpty && (
+					<>
+						<Text style={styles.headers}>Past Trips</Text>
+						{userPastTrips}
+					</>
+				)}
+			</>
+		);
+	};
 
 	return (
 		<View style={styles.container}>
@@ -209,12 +313,9 @@ const MainPage = ({ navigation }) => {
 				<Text style={styles.roundButtonText}>+</Text>
 			</TouchableOpacity>
 			<ScrollView>
-				<Text style={styles.headers}>Future Trips</Text>
-				{userFutureTrips}
-				<Text style={styles.headers}>Ongoing Trip</Text>
-				{userOngoingTrips}
-				<Text style={styles.headers}>Past Trips</Text>
-				{userPastTrips}
+				<FutureTripsComponent />
+				<OngoingTripsComponent />
+				<PastTripsComponent />
 			</ScrollView>
 		</View>
 	);

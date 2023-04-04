@@ -10,35 +10,8 @@ const TripCard = ({
 	city,
 	country,
 	navigation,
+	photoUrl,
 }) => {
-	//dodać sprawdzanie czy data końcowa jest późniejsza czy aktualna i formatowanie daty - po API
-
-	//TYMCZASOWO
-
-	const trips = [
-		{
-			image:
-				"https://images.unsplash.com/photo-1513026705753-bc3fffca8bf4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8OXx8bG9uZG9ufGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
-			tripName: "London",
-			startDate: "15.11.2022",
-			endDate: "25.11.2022",
-		},
-		{
-			image:
-				"https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NHx8QmFyY2Vsb25hfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
-			tripName: "Barcelona",
-			startDate: "21.01.2023",
-			endDate: "25.01.2023",
-		},
-		{
-			image:
-				"https://images.unsplash.com/photo-1552832230-c0197dd311b5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8Um9tZXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60",
-			tripName: "Rome",
-			startDate: "24.02.2023",
-			endDate: "20.03.2023",
-		},
-	];
-
 	const formattedStartDate = new Date(startDate).toLocaleDateString();
 	const formattedEndDate = new Date(endDate).toLocaleDateString();
 
@@ -53,7 +26,7 @@ const TripCard = ({
 			city,
 			country,
 			navigation,
-			image: trips[tripId].image,
+			image: photoUrl,
 		});
 	};
 
@@ -63,7 +36,7 @@ const TripCard = ({
 				<Image
 					style={styles.imageStyle}
 					source={{
-						uri: trips[tripId].image,
+						uri: photoUrl,
 					}}
 				/>
 				<Text style={styles.tripName}>{tripName}</Text>

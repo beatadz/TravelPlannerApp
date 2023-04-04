@@ -6,10 +6,12 @@ import {
 	TouchableOpacity,
 	ImageBackground,
 	ScrollView,
+	BackHandler,
 } from "react-native";
 import { useEffect, useState } from "react";
 import Overview from "../components/Overview";
 import Gallery from "../components/Gallery";
+import Map from "../components/Map";
 import Spending from "../components/Spending";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import AddActivity from "../components/AddActivity";
@@ -30,6 +32,16 @@ const Trip = ({ route }) => {
 		image,
 	} = route.params;
 
+	BackHandler.addEventListener("hardwareBackPress", () => {
+		navigation.goBack();
+		return true;
+	});
+
+	BackHandler.removeEventListener("hardwareBackPress", () => {
+		navigation.goBack();
+		return true;
+	});
+
 	return (
 		<View style={styles.container}>
 			{/* {isAddFormOpen ? <Add setIsAddFormOpen={setIsAddFormOpen} /> : null} */}
@@ -40,15 +52,16 @@ const Trip = ({ route }) => {
 						uri: image,
 					}}
 				>
-					<Text style={styles.myTripsText}>{tripName}</Text>
-					<Text
-						style={styles.date}
-					>{`${startDate} - ${endDate} ${city}, ${country}`}</Text>
+					<View style={styles.shadow} />
 				</ImageBackground>
+				<Text style={styles.myTripsText}>{tripName}</Text>
+				<Text
+					style={styles.date}
+				>{`${startDate} - ${endDate} ${city}, ${country}`}</Text>
 			</View>
 			<Tab.Navigator
 				screenOptions={{
-					tabBarLabelStyle: { fontSize: 16 },
+					tabBarLabelStyle: { fontSize: 14 },
 					tabBarStyle: { backgroundColor: "#DBDBDB" },
 					//tabBarActiveTintColor: "black",
 				}}
@@ -58,6 +71,16 @@ const Trip = ({ route }) => {
 					children={() => <Overview tripId={tripId} navigation={navigation} />}
 				/>
 				<Tab.Screen name="Gallery" component={Gallery} />
+				<Tab.Screen
+					name="Map"
+					children={() => (
+						<Map
+							tripId={tripId}
+							coordinate={coordinate}
+							navigation={navigation}
+						/>
+					)}
+				/>
 				<Tab.Screen
 					name="Spending"
 					children={() => <Spending tripId={tripId} navigation={navigation} />}
@@ -78,7 +101,16 @@ const styles = StyleSheet.create({
 		width: "100%",
 		overflow: "hidden",
 	},
-	headerImageIconStyle: { width: "100%", height: "100%", resizeMode: "cover" },
+	headerImageIconStyle: {
+		width: "100%",
+		height: "100%",
+		resizeMode: "cover",
+		//opacity: 0.75,
+	},
+	shadow: {
+		backgroundColor: "rgba(0,0,0, 0.25)",
+		flex: 1,
+	},
 	myTripsText: {
 		position: "absolute",
 		top: "70%",
