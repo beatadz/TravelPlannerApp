@@ -8,13 +8,14 @@ import {
 	Button,
 	TouchableOpacity,
 } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const AddActivity = ({ route }) => {
 	const { onAddHandler, navigation, tripId } = route.params;
 
 	const [dayInput, setDayInput] = useState(0);
 	const [activityNameInput, setActivityNameInput] = useState("");
+	const [showError, setShowError] = useState(false);
 
 	const addActivity = () => {
 		const activityToAdd = {
@@ -26,6 +27,14 @@ const AddActivity = ({ route }) => {
 		onAddHandler(activityToAdd);
 	};
 
+	useEffect(() => {
+		if (dayInput <= 0 && dayInput !== "") {
+			setShowError(true);
+		} else {
+			setShowError(false);
+		}
+	}, [dayInput]);
+
 	return (
 		<View style={styles.container}>
 			<View style={styles.addContainer}>
@@ -33,7 +42,7 @@ const AddActivity = ({ route }) => {
 				<Text style={styles.label}>Day</Text>
 				<TextInput
 					keyboardType="numeric"
-					placeholder="Enter a day..."
+					placeholder="Enter a day"
 					style={styles.inputStyle}
 					placeholderTextColor="#787878"
 					inputMode="numeric"
@@ -43,10 +52,13 @@ const AddActivity = ({ route }) => {
 						setDayInput(Number(text));
 					}}
 				/>
+				{showError && (
+					<Text style={styles.error}>Day must be greater than 0</Text>
+				)}
 				<Text style={styles.label}>Activity Name</Text>
 				<TextInput
 					keyboardType="text"
-					placeholder="Enter an activity name..."
+					placeholder="Enter an activity name"
 					style={styles.inputStyle}
 					placeholderTextColor="#787878"
 					inputMode="text"
@@ -55,6 +67,7 @@ const AddActivity = ({ route }) => {
 					onChangeText={(text) => {
 						setActivityNameInput(text);
 					}}
+					maxLength={25}
 				/>
 				<View style={styles.buttonsContainer}>
 					<TouchableOpacity
@@ -70,8 +83,10 @@ const AddActivity = ({ route }) => {
 						activeOpacity={0.95}
 						style={styles.button}
 						onPress={() => {
-							addActivity();
-							navigation.goBack(null);
+							if (!showError) {
+								addActivity();
+								navigation.goBack(null);
+							}
 						}}
 					>
 						<Text style={styles.text}>Continue</Text>
@@ -95,7 +110,6 @@ const styles = StyleSheet.create({
 	addContainer: {
 		backgroundColor: "white",
 		width: "80%",
-		//height: "50%",
 		minHeight: "45%",
 		borderRadius: 12,
 		paddingTop: 20,
@@ -123,8 +137,14 @@ const styles = StyleSheet.create({
 		fontSize: 20,
 		marginBottom: 5,
 	},
+	error: {
+		fontSize: 13,
+		color: "red",
+		alignSelf: "center",
+		marginTop: 2,
+	},
 	button: {
-		minWidth: 110,
+		minWidth: "32%",
 		minHeight: 40,
 		backgroundColor: "#0073ff",
 		borderRadius: 5,

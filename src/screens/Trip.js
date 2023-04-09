@@ -7,14 +7,14 @@ import {
 	ImageBackground,
 	ScrollView,
 	BackHandler,
+	Alert,
 } from "react-native";
-import { useEffect, useState } from "react";
 import Overview from "../components/Overview";
-import Gallery from "../components/Gallery";
 import Map from "../components/Map";
 import Spending from "../components/Spending";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import AddActivity from "../components/AddActivity";
+import { API_URL } from "../constants";
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -30,6 +30,7 @@ const Trip = ({ route }) => {
 		country,
 		navigation,
 		image,
+		setIsTripDeleted,
 	} = route.params;
 
 	BackHandler.addEventListener("hardwareBackPress", () => {
@@ -41,10 +42,28 @@ const Trip = ({ route }) => {
 		navigation.goBack();
 		return true;
 	});
+	const REMOVE_ICON = "../assets/icons/trash.png";
+
+	async function deleteTripHandler(id) {
+		const response = await fetch(`${API_URL}/trips/delete/${id}`, {
+			method: "DELETE",
+		});
+		if (!response.ok) {
+			throw new Error("Failed to delete tour.");
+		}
+	}
+
+	async function onDeleteHandler(id) {
+		try {
+			await deleteTripHandler(id);
+			setIsTripDeleted(true);
+		} catch (error) {
+			alert(error.message);
+		}
+	}
 
 	return (
 		<View style={styles.container}>
-			{/* {isAddFormOpen ? <Add setIsAddFormOpen={setIsAddFormOpen} /> : null} */}
 			<View style={styles.imageWrapper}>
 				<ImageBackground
 					style={styles.headerImageIconStyle}
@@ -55,6 +74,26 @@ const Trip = ({ route }) => {
 					<View style={styles.shadow} />
 				</ImageBackground>
 				<Text style={styles.myTripsText}>{tripName}</Text>
+				<TouchableOpacity
+					style={styles.removeTrip}
+					onPress={() => {
+						Alert.alert("Delete trip", "Do you want to delete your trip?", [
+							{
+								text: "Cancel",
+								style: "cancel",
+							},
+							{
+								text: "OK",
+								onPress: () => {
+									onDeleteHandler(tripId);
+									navigation.goBack();
+								},
+							},
+						]);
+					}}
+				>
+					<Image style={styles.editIcon} source={require(REMOVE_ICON)} />
+				</TouchableOpacity>
 				<Text
 					style={styles.date}
 				>{`${startDate} - ${endDate} ${city}, ${country}`}</Text>
@@ -63,14 +102,18 @@ const Trip = ({ route }) => {
 				screenOptions={{
 					tabBarLabelStyle: { fontSize: 14 },
 					tabBarStyle: { backgroundColor: "#DBDBDB" },
-					//tabBarActiveTintColor: "black",
 				}}
 			>
 				<Tab.Screen
 					name="Overview"
-					children={() => <Overview tripId={tripId} navigation={navigation} />}
+					children={() => (
+						<Overview
+							tripId={tripId}
+							tripDescription={tripDescription}
+							navigation={navigation}
+						/>
+					)}
 				/>
-				<Tab.Screen name="Gallery" component={Gallery} />
 				<Tab.Screen
 					name="Map"
 					children={() => (
@@ -105,26 +148,36 @@ const styles = StyleSheet.create({
 		width: "100%",
 		height: "100%",
 		resizeMode: "cover",
-		//opacity: 0.75,
 	},
 	shadow: {
-		backgroundColor: "rgba(0,0,0, 0.25)",
+		backgroundColor: "rgba(0,0,0, 0.30)",
 		flex: 1,
 	},
 	myTripsText: {
 		position: "absolute",
-		top: "70%",
+		top: "66%",
 		left: "2%",
 		color: "#DBDBDB",
-		fontSize: 40,
+		fontSize: 35,
 		fontWeight: "bold",
+	},
+	removeTrip: {
+		position: "absolute",
+		top: "69%",
+		right: "5%",
+		color: "red",
+		fontSize: 20,
 	},
 	date: {
 		position: "absolute",
-		top: "88%",
+		top: "82%",
 		left: "2%",
 		color: "#DBDBDB",
-		fontSize: 22,
+		fontSize: 20,
+	},
+	editIcon: {
+		height: 30,
+		width: 30,
 	},
 });
 

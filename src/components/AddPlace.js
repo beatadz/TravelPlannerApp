@@ -8,19 +8,17 @@ import {
 	Button,
 	TouchableOpacity,
 	ToastAndroid,
+	Alert,
 } from "react-native";
 import { useState } from "react";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
-import { API_KEY } from "../ApiKey";
 import MapView, { Marker } from "react-native-maps";
 
 const AddTrip = ({ route }) => {
 	const { onAddHandler, navigation, tripId, region } = route.params;
 
-	const [tripName, setTripName] = useState("");
 	const [coordinate, setCoordinate] = useState("");
 	const [placeId, setPlaceId] = useState("");
-	const [fullAddress, setFullAddress] = useState("");
 	const [openMap, setOpenMap] = useState(false);
 	const [openSelect, setOpenSelect] = useState(false);
 	const [placeName, setPlaceName] = useState("");
@@ -31,14 +29,12 @@ const AddTrip = ({ route }) => {
 			savedPlaceCoordinates: coordinate.lat + "," + coordinate.lng,
 			tripId: tripId,
 		};
-		console.log(placeToAdd);
 		onAddHandler(placeToAdd);
 	};
 
 	const selectLocationHandler = (event) => {
 		const lat = event.nativeEvent.coordinate.latitude;
 		const lng = event.nativeEvent.coordinate.longitude;
-		console.log(lat, lng);
 		setCoordinate({ lat: lat, lng: lng });
 	};
 
@@ -80,19 +76,14 @@ const AddTrip = ({ route }) => {
 						<Text style={styles.googlelabel}>Find your favorite place</Text>
 						<View style={styles.AutocompleteContainer}>
 							<GooglePlacesAutocomplete
-								// placeholder={fullAddress === "" ? "Type a place" : fullAddress}
 								placeholder="Type a place"
 								onPress={(data, details) => {
-									//console.log(data, details);
 									setCoordinate(details.geometry.location);
-									console.log(details.geometry.location);
-									console.log(details.formatted_address);
-									setFullAddress(details.formatted_address);
 									setPlaceId(details.place_id);
 									const address = details.formatted_address.split(", ");
 									setPlaceName(address[0]);
 								}}
-								query={{ key: API_KEY, language: "en" }}
+								query={{ key: process.env.REACT_APP_API_KEY, language: "en" }}
 								fetchDetails={true}
 								onFail={(error) => console.log(error)}
 								onNotFound={() => console.log("no results")}
@@ -142,7 +133,7 @@ const AddTrip = ({ route }) => {
 						<Text style={styles.label}>Place Name*</Text>
 						<TextInput
 							keyboardType="text"
-							placeholder="Enter a place name..."
+							placeholder="Enter a place name"
 							style={styles.inputStyle}
 							placeholderTextColor="#787878"
 							inputMode="text"
@@ -151,6 +142,7 @@ const AddTrip = ({ route }) => {
 							onChangeText={(text) => {
 								setPlaceName(text);
 							}}
+							maxLength={25}
 						/>
 					</>
 				)}
@@ -174,7 +166,6 @@ const AddTrip = ({ route }) => {
 							activeOpacity={0.95}
 							style={styles.button}
 							onPress={() => {
-								console.log("placeId: " + placeId);
 								placeName !== ""
 									? addPlace()
 									: () => {
@@ -225,7 +216,6 @@ const styles = StyleSheet.create({
 	addContainer: {
 		backgroundColor: "white",
 		width: "80%",
-		//height: "50%",
 		height: "55%",
 		minHeight: 470,
 		borderRadius: 12,
@@ -262,7 +252,7 @@ const styles = StyleSheet.create({
 		marginBottom: 5,
 	},
 	button: {
-		minWidth: 110,
+		minWidth: "32%",
 		minHeight: 40,
 		backgroundColor: "#0073ff",
 		borderRadius: 5,

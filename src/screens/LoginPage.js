@@ -4,9 +4,7 @@ import { Button } from "@rneui/themed";
 import { useEffect, useState } from "react";
 import MainPage from "./MainPage";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const ADD_PHOTO_URL = "../assets/icons/profilePhoto.png";
-const API_URL = "http://192.168.0.100:7093/api";
+import { API_URL } from "../constants";
 
 const LoginPage = ({ navigation }) => {
 	const [email, setEmail] = useState("");
@@ -19,9 +17,9 @@ const LoginPage = ({ navigation }) => {
 	useEffect(() => {
 		const checkToken = async () => {
 			const jwtToken = await AsyncStorage.getItem("jwt");
-			console.log(jwtToken);
+			//console.log(jwtToken);
 			if (jwtToken) {
-				fetchUserHandler(); //poprawić
+				fetchUserHandler();
 			}
 		};
 		checkToken();
@@ -36,7 +34,7 @@ const LoginPage = ({ navigation }) => {
 			},
 		});
 		if (!response.ok) {
-			throw new Error("Nie udało się zalogować.");
+			throw new Error("Login failed.");
 		}
 
 		const responseData = await response.json();
@@ -57,7 +55,7 @@ const LoginPage = ({ navigation }) => {
 			},
 		});
 		if (!response.ok) {
-			throw new Error("Nie udało się zarejestrować.");
+			throw new Error("Failed to register.");
 		}
 	}
 
@@ -75,7 +73,6 @@ const LoginPage = ({ navigation }) => {
 
 		if (response.ok) {
 			setUserAccount(responseData);
-			console.log(responseData);
 			setIsLogged(true);
 			const userId = responseData.userId;
 			navigation.navigate("MainPage", { userId, navigation });
@@ -84,7 +81,7 @@ const LoginPage = ({ navigation }) => {
 		}
 	}
 
-	const onClick = async () => {
+	const onSubmit = async () => {
 		if (hasUserGotAnAccount) {
 			const user = {
 				userEmail: email,
@@ -104,10 +101,11 @@ const LoginPage = ({ navigation }) => {
 			};
 			try {
 				await registerUserHandler(user);
+				setHasUserGotAnAccount(true);
+				navigation.goBack(null);
 			} catch (error) {
 				alert(error.message);
 			}
-			setHasUserGotAnAccount(true);
 		}
 	};
 
@@ -123,7 +121,7 @@ const LoginPage = ({ navigation }) => {
 					<Text style={styles.emailLabel}>Email</Text>
 					<View style={styles.containerStyle}>
 						<TextInput
-							placeholder="Enter your email..."
+							placeholder="Enter your email"
 							style={styles.inputStyle}
 							onChangeText={setEmail}
 							value={email}
@@ -133,7 +131,7 @@ const LoginPage = ({ navigation }) => {
 					<View style={styles.containerStyle}>
 						<TextInput
 							secureTextEntry={true}
-							placeholder="Enter your password..."
+							placeholder="Enter your password"
 							style={styles.inputStyle}
 							onChangeText={setPassword}
 							value={password}
@@ -162,7 +160,7 @@ const LoginPage = ({ navigation }) => {
 							iconRight
 							iconContainerStyle={{ marginLeft: 10, marginRight: -10 }}
 							onPress={() => {
-								onClick();
+								onSubmit();
 							}}
 						/>
 					</View>
@@ -186,7 +184,7 @@ const LoginPage = ({ navigation }) => {
 					<Text style={styles.emailLabel}>Username</Text>
 					<View style={styles.containerStyle}>
 						<TextInput
-							placeholder="Enter your username..."
+							placeholder="Enter your username"
 							style={styles.inputStyle}
 							onChangeText={setUsername}
 							value={username}
@@ -195,7 +193,7 @@ const LoginPage = ({ navigation }) => {
 					<Text style={styles.emailLabel}>Email</Text>
 					<View style={styles.containerStyle}>
 						<TextInput
-							placeholder="Enter your email..."
+							placeholder="Enter your email"
 							style={styles.inputStyle}
 							onChangeText={setEmail}
 							value={email}
@@ -205,7 +203,7 @@ const LoginPage = ({ navigation }) => {
 					<View style={styles.containerStyle}>
 						<TextInput
 							secureTextEntry={true}
-							placeholder="Enter your password..."
+							placeholder="Enter your password"
 							style={styles.inputStyle}
 							onChangeText={setPassword}
 							value={password}
@@ -234,7 +232,7 @@ const LoginPage = ({ navigation }) => {
 							iconRight
 							iconContainerStyle={{ marginLeft: 10, marginRight: -10 }}
 							onPress={() => {
-								onClick();
+								onSubmit();
 							}}
 						/>
 					</View>

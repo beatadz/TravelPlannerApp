@@ -5,10 +5,10 @@ import {
 	View,
 	Image,
 	TouchableOpacity,
+	Dimensions,
 } from "react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
-
-const API_URL = "http://192.168.0.100:7093/api";
+import { API_URL } from "../constants";
 
 const Spending = ({ tripId, navigation }) => {
 	const [loadedExpenses, setLoadedExpenses] = useState([]);
@@ -18,7 +18,7 @@ const Spending = ({ tripId, navigation }) => {
 			const response = await fetch(`${API_URL}/expenses/all?tripId=${tripId}`); //tymczasowo
 
 			if (!response.ok) {
-				throw new Error("Nie udało się pobrać wydatków.");
+				throw new Error("Expenses could not be fetched.");
 			}
 
 			const responseData = await response.json();
@@ -37,7 +37,7 @@ const Spending = ({ tripId, navigation }) => {
 			},
 		});
 		if (!response.ok) {
-			throw new Error("Nie udało się dodać wydatku.");
+			throw new Error("Failed to add expense.");
 		}
 	}
 
@@ -59,7 +59,7 @@ const Spending = ({ tripId, navigation }) => {
 			},
 		});
 		if (!response.ok) {
-			throw new Error("Nie udało się zaktualizować wydatku.");
+			throw new Error("Failed to update expense.");
 		}
 	}
 
@@ -77,7 +77,7 @@ const Spending = ({ tripId, navigation }) => {
 			method: "DELETE",
 		});
 		if (!response.ok) {
-			throw new Error("Nie udało się usunąć wydatku.");
+			throw new Error("The expense could not be deleted.");
 		}
 	}
 
@@ -114,9 +114,9 @@ const Spending = ({ tripId, navigation }) => {
 	const EDIT_ICON = "../assets/icons/edit.png";
 	const MONEY_ICON = "../assets/icons/dollar.png";
 
-	const ExpensesByCategories = expensesByCategory.map((category) => {
+	const ExpensesByCategories = expensesByCategory.map((category, index) => {
 		return (
-			<View style={styles.day} key={category.expenseId}>
+			<View style={styles.day} key={index}>
 				<Text style={styles.categoryTitle}>{category[0].category}</Text>
 				{category.map((expense) => {
 					return (
@@ -178,10 +178,12 @@ const Spending = ({ tripId, navigation }) => {
 				</TouchableOpacity>
 			</View>
 			{ExpensesByCategories}
-			<View style={styles.summary}>
-				<Text style={styles.sumHeader}>Sum: </Text>
-				<Text style={styles.sum}>{sum} zł</Text>
-			</View>
+			{ExpensesByCategories.length > 0 && (
+				<View style={styles.summary}>
+					<Text style={styles.sumHeader}>Sum: </Text>
+					<Text style={styles.sum}>{sum} zł</Text>
+				</View>
+			)}
 		</View>
 	);
 };
@@ -193,7 +195,6 @@ const styles = StyleSheet.create({
 	},
 	addExpense: {
 		minHeight: 70,
-		// backgroundColor: "red",
 	},
 	headers: {
 		color: "black",
@@ -272,11 +273,13 @@ const styles = StyleSheet.create({
 		marginRight: 25,
 	},
 	expenseTitle: {
-		fontSize: 18,
+		fontSize: 17,
 		marginRight: 8,
+		maxWidth: Dimensions.get("window").width - 260,
+		flexWrap: "wrap",
 	},
 	expensePrice: {
-		fontSize: 18,
+		fontSize: 17,
 		color: "#f60404",
 	},
 	sum: {

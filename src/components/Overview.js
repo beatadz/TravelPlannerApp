@@ -9,10 +9,9 @@ import {
 } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 import { CheckBox } from "@rneui/themed";
+import { API_URL } from "../constants";
 
-const API_URL = "http://192.168.0.100:7093/api";
-
-const Overview = ({ tripId, navigation }) => {
+const Overview = ({ tripId, navigation, tripDescription }) => {
 	const [loadedActivities, setLoadedActivities] = useState([]);
 
 	const fetchActivitiesHandler = useCallback(async () => {
@@ -22,7 +21,7 @@ const Overview = ({ tripId, navigation }) => {
 			);
 
 			if (!response.ok) {
-				throw new Error("Nie udało się pobrać zadań.");
+				throw new Error("Failed to download tasks.");
 			}
 
 			const responseData = await response.json();
@@ -41,7 +40,7 @@ const Overview = ({ tripId, navigation }) => {
 			},
 		});
 		if (!response.ok) {
-			throw new Error("Nie udało się dodać aktywnosci.");
+			throw new Error("Failed to add activity.");
 		}
 	}
 
@@ -63,7 +62,7 @@ const Overview = ({ tripId, navigation }) => {
 			},
 		});
 		if (!response.ok) {
-			throw new Error("Nie udało się zaktualizować aktywnosci.");
+			throw new Error("Failed to update activity.");
 		}
 	}
 
@@ -81,7 +80,7 @@ const Overview = ({ tripId, navigation }) => {
 			method: "DELETE",
 		});
 		if (!response.ok) {
-			throw new Error("Nie udało się usunąć aktywnosci.");
+			throw new Error("Failed to delete activity.");
 		}
 	}
 
@@ -106,16 +105,21 @@ const Overview = ({ tripId, navigation }) => {
 
 	const activitiesByDay = groupBy(loadedActivities, "day");
 
+	const sortedActivities = activitiesByDay.sort((a, b) => a[0].day - b[0].day);
+
 	const REMOVE_ICON = "../assets/icons/remove.png";
 	const EDIT_ICON = "../assets/icons/edit.png";
 
-	const planByDays = activitiesByDay.map((day) => {
+	const planByDays = sortedActivities.map((day) => {
 		return (
 			<View style={styles.day} key={day.activityId}>
 				<Text style={styles.dayTitle}>{`Day ${day[0].day}`}</Text>
 				{day.map((activity) => {
 					return (
-						<View key={activity.activityName} style={styles.activityNames}>
+						<View
+							key={activity.activityName + activity.activityId}
+							style={styles.activityNames}
+						>
 							<CheckBox
 								checked={activity.done}
 								containerStyle={styles.checkbox}
@@ -166,6 +170,9 @@ const Overview = ({ tripId, navigation }) => {
 
 	return (
 		<ScrollView style={styles.container}>
+			{tripDescription !== "" && (
+				<Text style={styles.description}>{tripDescription}</Text>
+			)}
 			<View style={styles.addPlan}>
 				<Text style={styles.headers}>Plan a trip</Text>
 				<TouchableOpacity
@@ -192,13 +199,17 @@ const styles = StyleSheet.create({
 	},
 	addPlan: {
 		minHeight: 70,
-		// backgroundColor: "red",
 	},
 	headers: {
 		color: "black",
 		fontSize: 30,
 		fontWeight: "bold",
 		marginLeft: "5%",
+		marginTop: "5%",
+	},
+	description: {
+		marginLeft: "5%",
+		fontSize: 15,
 		marginTop: "5%",
 	},
 	roundButton: {

@@ -36,7 +36,7 @@ const EditActivity = ({ route }) => {
 				<Text style={styles.label}>Day</Text>
 				<TextInput
 					keyboardType="numeric"
-					placeholder="Enter a day..."
+					placeholder="Enter a day"
 					style={styles.inputStyle}
 					placeholderTextColor="#787878"
 					inputMode="numeric"
@@ -49,7 +49,7 @@ const EditActivity = ({ route }) => {
 				<Text style={styles.label}>Activity Name</Text>
 				<TextInput
 					keyboardType="text"
-					placeholder="Enter an activity name..."
+					placeholder="Enter an activity name"
 					style={styles.inputStyle}
 					placeholderTextColor="#787878"
 					inputMode="text"
@@ -98,7 +98,6 @@ const styles = StyleSheet.create({
 	addContainer: {
 		backgroundColor: "white",
 		width: "80%",
-		//height: "50%",
 		minHeight: "45%",
 		borderRadius: 12,
 		paddingTop: 20,
@@ -127,7 +126,7 @@ const styles = StyleSheet.create({
 		marginBottom: 5,
 	},
 	button: {
-		minWidth: 110,
+		minWidth: "32%",
 		minHeight: 40,
 		backgroundColor: "#0073ff",
 		borderRadius: 5,

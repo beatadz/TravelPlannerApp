@@ -34,44 +34,44 @@ const AddExpense = ({ route }) => {
 				<Text style={styles.label}>Expense Name</Text>
 				<TextInput
 					keyboardType="text"
-					placeholder="Enter an expense name..."
+					placeholder="Enter an expense name"
 					style={styles.inputStyle}
 					placeholderTextColor="#787878"
 					inputMode="text"
 					cursorColor="0073ff"
 					value={expenseNameInput}
 					onChangeText={(text) => {
-						console.log(text);
 						setExpenseNameInput(text);
 					}}
+					maxLength={20}
 				/>
 				<Text style={styles.label}>Expense Category</Text>
 				<TextInput
 					keyboardType="text"
-					placeholder="Enter an expense category..."
+					placeholder="Enter an expense category"
 					style={styles.inputStyle}
 					placeholderTextColor="#787878"
 					inputMode="text"
 					cursorColor="0073ff"
 					value={categoryInput}
 					onChangeText={(text) => {
-						console.log(text);
 						setCategoryInput(text);
 					}}
+					maxLength={16}
 				/>
 				<Text style={styles.label}>Price</Text>
 				<TextInput
 					keyboardType="numeric"
-					placeholder="Enter a price..."
+					placeholder="Enter a price"
 					style={styles.inputStyle}
 					placeholderTextColor="#787878"
 					inputMode="numeric"
 					cursorColor="0073ff"
 					value={priceInput}
 					onChangeText={(text) => {
-						console.log(Number(text));
 						setPriceInput(Number(text));
 					}}
+					maxLength={8}
 				/>
 				<View style={styles.buttonsContainer}>
 					<TouchableOpacity
@@ -112,7 +112,6 @@ const styles = StyleSheet.create({
 	addContainer: {
 		backgroundColor: "white",
 		width: "80%",
-		//height: "50%",
 		minHeight: "45%",
 		borderRadius: 12,
 		paddingTop: 20,
@@ -141,7 +140,7 @@ const styles = StyleSheet.create({
 		marginBottom: 5,
 	},
 	button: {
-		minWidth: 110,
+		minWidth: "32%",
 		minHeight: 40,
 		backgroundColor: "#0073ff",
 		borderRadius: 5,

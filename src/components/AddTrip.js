@@ -11,11 +11,11 @@ import {
 } from "react-native";
 import { useState } from "react";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
-import { API_KEY } from "../ApiKey";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
-import { useEffect, useCallback } from "react";
+import { useEffect } from "react";
 
 const AddTrip = ({ route }) => {
+	const currentDate = new Date();
 	const { onAddHandler, navigation } = route.params;
 
 	const [tripName, setTripName] = useState("");
@@ -23,8 +23,8 @@ const AddTrip = ({ route }) => {
 	const [city, setCity] = useState("");
 	const [country, setCountry] = useState("");
 	const [coordinate, setCoordinate] = useState("");
-	const [startDate, setStartDate] = useState(new Date());
-	const [endDate, setEndDate] = useState(new Date());
+	const [startDate, setStartDate] = useState(currentDate);
+	const [endDate, setEndDate] = useState(currentDate);
 	const [startDateButtonText, setStartDateButtonText] = useState("Start date");
 	const [endDateButtonText, setEndDateButtonText] = useState("End date");
 	const [placeId, setPlaceId] = useState("");
@@ -33,6 +33,8 @@ const AddTrip = ({ route }) => {
 	const [loadedPhoto, setLoadedPhoto] = useState([]);
 
 	const [page, setPage] = useState(1);
+
+	const [showError, setShowError] = useState(false);
 
 	const showDatePicker = (type) => {
 		DateTimePickerAndroid.open({
@@ -49,24 +51,37 @@ const AddTrip = ({ route }) => {
 		});
 	};
 
+	useEffect(() => {
+		if (
+			startDate > endDate &&
+			startDate !== currentDate &&
+			endDate !== currentDate
+		) {
+			setShowError(true);
+		} else {
+			setShowError(false);
+		}
+	}, [startDate, endDate]);
+
 	const addTrip = () => {
-		const tripToAdd = {
-			tripName: tripName,
-			tripDescription: tripDescription,
-			startDate: startDate.toISOString(),
-			endDate: endDate.toISOString(),
-			coordinate: coordinate.lat + "," + coordinate.lng,
-			city: city,
-			country: country,
-			photoUrl: loadedPhoto.slice(1, loadedPhoto.length - 1),
-			userId: 1,
-		};
-		console.log(tripToAdd);
-		onAddHandler(tripToAdd);
+		if (!showError) {
+			const tripToAdd = {
+				tripName: tripName,
+				tripDescription: tripDescription,
+				startDate: startDate.toISOString(),
+				endDate: endDate.toISOString(),
+				coordinate: coordinate.lat + "," + coordinate.lng,
+				city: city,
+				country: country,
+				photoUrl: loadedPhoto.slice(1, loadedPhoto.length - 1),
+				userId: 1,
+			};
+			onAddHandler(tripToAdd);
+		}
 	};
 
 	const fetchGooglePlacesPhotos = async (photoReference) => {
-		const url = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${photoReference}&key=${API_KEY}`;
+		const url = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${photoReference}&key=${process.env.REACT_APP_API_KEY}`;
 
 		try {
 			const response = await fetch(url);
@@ -74,9 +89,6 @@ const AddTrip = ({ route }) => {
 			if (!response.ok) {
 				throw new Error("Nie udało się pobrać zdjęcia.");
 			}
-
-			//const responseData = await response.json();
-			console.log(JSON.stringify(response.url));
 			setLoadedPhoto(JSON.stringify(response.url));
 		} catch (error) {
 			alert(error.message);
@@ -92,23 +104,18 @@ const AddTrip = ({ route }) => {
 						<Text style={styles.label}>Select your destination*</Text>
 						<View style={styles.AutocompleteContainer}>
 							<GooglePlacesAutocomplete
-								// placeholder={fullAddress === "" ? "Type a place" : fullAddress}
 								placeholder="Type a place"
 								onPress={(data, details) => {
-									//console.log(data, details);
 									setCoordinate(details.geometry.location);
-									console.log(details.geometry.location);
-									console.log(details.formatted_address);
 									const address = details.formatted_address.split(", ");
 									setFullAddress(details.formatted_address);
 									setCity(address[0]);
 									setCountry(address[address.length - 1]);
 									setPlaceId(details.place_id);
 									setPhotoReference(details.photos[0].photo_reference);
-									console.log(details.photos[0].photo_reference);
 									fetchGooglePlacesPhotos(details.photos[0].photo_reference);
 								}}
-								query={{ key: API_KEY, language: "en" }}
+								query={{ key: process.env.REACT_APP_API_KEY, language: "en" }}
 								fetchDetails={true}
 								onFail={(error) => console.log(error)}
 								onNotFound={() => console.log("no results")}
@@ -146,7 +153,6 @@ const AddTrip = ({ route }) => {
 								activeOpacity={0.95}
 								style={styles.button}
 								onPress={() => {
-									console.log("placeId: " + placeId);
 									placeId !== ""
 										? setPage(2)
 										: () => {
@@ -155,7 +161,6 @@ const AddTrip = ({ route }) => {
 													ToastAndroid.SHORT
 												);
 										  };
-									//navigation.goBack(null);
 								}}
 							>
 								<Text style={styles.text}>Continue</Text>
@@ -184,10 +189,15 @@ const AddTrip = ({ route }) => {
 								<Text style={styles.date}>{endDateButtonText}</Text>
 							</TouchableOpacity>
 						</View>
+						{showError && (
+							<Text style={styles.error}>
+								Start date can't be after end date
+							</Text>
+						)}
 						<Text style={styles.label}>Trip Name*</Text>
 						<TextInput
 							keyboardType="text"
-							placeholder="Enter a trip name..."
+							placeholder="Enter a trip name"
 							style={styles.inputStyle}
 							placeholderTextColor="#787878"
 							inputMode="text"
@@ -196,15 +206,13 @@ const AddTrip = ({ route }) => {
 							onChangeText={(text) => {
 								setTripName(text);
 							}}
-							// onBlur={(text) => {
-							// 	setTripName(text);
-							// }}
+							maxLength={15}
 						/>
 						<Text style={styles.label}>Trip Description</Text>
 						<TextInput
 							multiline={true}
 							keyboardType="text"
-							placeholder="Enter a trip description..."
+							placeholder="Enter a trip description"
 							style={styles.inputStyle}
 							placeholderTextColor="#787878"
 							inputMode="text"
@@ -220,7 +228,6 @@ const AddTrip = ({ route }) => {
 								style={styles.button}
 								onPress={() => {
 									setPage(1);
-									//navigation.goBack(null);
 								}}
 							>
 								<Text style={styles.text}>Back</Text>
@@ -239,7 +246,7 @@ const AddTrip = ({ route }) => {
 												);
 										  }
 										: addTrip();
-									navigation.goBack(null);
+									!showError && navigation.goBack(null);
 								}}
 							>
 								<Text style={styles.text}>Continue</Text>
@@ -265,9 +272,8 @@ const styles = StyleSheet.create({
 	addContainer: {
 		backgroundColor: "white",
 		width: "80%",
-		//height: "50%",
 		height: "45%",
-		minHeight: 450,
+		minHeight: 460,
 		borderRadius: 12,
 		paddingTop: 20,
 		paddingBottom: 30,
@@ -295,7 +301,7 @@ const styles = StyleSheet.create({
 		marginBottom: 5,
 	},
 	button: {
-		minWidth: 110,
+		minWidth: "32%",
 		minHeight: 40,
 		backgroundColor: "#0073ff",
 		borderRadius: 5,
@@ -333,6 +339,12 @@ const styles = StyleSheet.create({
 	text: {
 		fontSize: 18,
 		color: "white",
+	},
+	error: {
+		fontSize: 13,
+		color: "red",
+		alignSelf: "center",
+		marginTop: 2,
 	},
 	buttonsContainer: {
 		display: "flex",

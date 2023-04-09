@@ -11,6 +11,7 @@ const TripCard = ({
 	country,
 	navigation,
 	photoUrl,
+	setIsTripDeleted,
 }) => {
 	const formattedStartDate = new Date(startDate).toLocaleDateString();
 	const formattedEndDate = new Date(endDate).toLocaleDateString();
@@ -27,12 +28,13 @@ const TripCard = ({
 			country,
 			navigation,
 			image: photoUrl,
+			setIsTripDeleted,
 		});
 	};
 
 	return (
 		<View style={styles.container}>
-			<Pressable onPress={onClick}>
+			<Pressable onPress={onClick} style={styles.photoAndTitle}>
 				<Image
 					style={styles.imageStyle}
 					source={{
@@ -51,11 +53,16 @@ const TripCard = ({
 const styles = StyleSheet.create({
 	container: {
 		backgroundColor: "#FFFFFF70",
-		height: 250,
 		marginHorizontal: 10,
 		marginTop: 15,
 		borderRadius: 20,
 		marginBottom: 5,
+	},
+	photoAndTitle: {
+		alignItems: "stretch",
+		flex: 1,
+		minHeight: 300,
+		paddingBottom: 5,
 	},
 	imageStyle: {
 		width: "100%",
@@ -74,6 +81,7 @@ const styles = StyleSheet.create({
 		marginLeft: 10,
 		fontSize: 16,
 		color: "#353535",
+		maxHeight: 40,
 	},
 });
 

@@ -7,29 +7,23 @@ import {
 	SafeAreaView,
 	ScrollView,
 	TouchableOpacity,
+	Dimensions,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { useCallback, useEffect, useState } from "react";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
-import { API_KEY } from "../ApiKey";
+import { API_URL } from "../constants";
 
 const Map = ({ navigation, tripId, coordinate }) => {
-	const API_URL = "http://192.168.0.100:7093/api";
-
-	console.log(coordinate);
-
 	const initialLocation = coordinate !== "" ? coordinate.split(",") : [];
 
-	console.log(initialLocation);
-
 	const [loadedSavedPlaces, setLoadedSavedPlaces] = useState([]);
-
 	const fetchSavedPlacesHandler = useCallback(async () => {
 		try {
 			const response = await fetch(`${API_URL}/places/all?tripId=${tripId}`); //tymczasowo
 
 			if (!response.ok) {
-				throw new Error("Nie udało się pobrać miejsc.");
+				throw new Error("Places could not be downloaded.");
 			}
 
 			const responseData = await response.json();
@@ -48,7 +42,7 @@ const Map = ({ navigation, tripId, coordinate }) => {
 			},
 		});
 		if (!response.ok) {
-			throw new Error("Nie udało się dodać miejsca.");
+			throw new Error("Failed to add space.");
 		}
 	}
 
@@ -65,8 +59,6 @@ const Map = ({ navigation, tripId, coordinate }) => {
 		fetchSavedPlacesHandler();
 	}, [fetchSavedPlacesHandler]);
 
-	console.log(loadedSavedPlaces);
-
 	const region = {
 		latitude: +initialLocation[0],
 		longitude: +initialLocation[1],
@@ -75,45 +67,43 @@ const Map = ({ navigation, tripId, coordinate }) => {
 	};
 
 	return (
-		<>
-			<ScrollView style={styles.container}>
-				<View style={styles.addPlace}>
-					<TouchableOpacity
-						style={styles.roundButton}
-						onPress={() => {
-							navigation.navigate("AddPlace", {
-								navigation,
-								tripId,
-								region,
-								onAddHandler,
-							});
-						}}
-					>
-						<Text style={styles.roundButtonText}>+</Text>
-					</TouchableOpacity>
-				</View>
-				<MapView
-					style={styles.map}
-					initialRegion={region}
-					zoomEnabled={true}
-					zoomTapEnabled={true}
-					showsBuildings={true}
-					zoomControlEnabled={true}
+		<View style={styles.container}>
+			<View style={styles.addPlace}>
+				<TouchableOpacity
+					style={styles.roundButton}
+					onPress={() => {
+						navigation.navigate("AddPlace", {
+							navigation,
+							tripId,
+							region,
+							onAddHandler,
+						});
+					}}
 				>
-					{loadedSavedPlaces.map((marker) => (
-						<Marker
-							key={marker.savedPlaceId}
-							coordinate={{
-								latitude: +marker.savedPlaceCoordinates.split(",")[0],
-								longitude: +marker.savedPlaceCoordinates.split(",")[1],
-							}}
-							title={marker.savedPlaceName}
-							pinColor={"tan"}
-						/>
-					))}
-				</MapView>
-			</ScrollView>
-		</>
+					<Text style={styles.roundButtonText}>+</Text>
+				</TouchableOpacity>
+			</View>
+			<MapView
+				style={styles.map}
+				initialRegion={region}
+				zoomEnabled={true}
+				zoomTapEnabled={true}
+				showsBuildings={true}
+				zoomControlEnabled={true}
+			>
+				{loadedSavedPlaces.map((marker) => (
+					<Marker
+						key={marker.savedPlaceId}
+						coordinate={{
+							latitude: +marker.savedPlaceCoordinates.split(",")[0],
+							longitude: +marker.savedPlaceCoordinates.split(",")[1],
+						}}
+						title={marker.savedPlaceName}
+						pinColor={"tan"}
+					/>
+				))}
+			</MapView>
+		</View>
 	);
 };
 
@@ -124,7 +114,6 @@ const styles = StyleSheet.create({
 	},
 	addPlace: {
 		minHeight: 70,
-		// backgroundColor: "red",
 	},
 	headers: {
 		color: "black",
@@ -163,9 +152,7 @@ const styles = StyleSheet.create({
 		marginTop: -5,
 	},
 	map: {
-		// backgroundColor: "#FFFFFF70",
 		flex: 1,
-		minHeight: 550,
 		marginTop: -70,
 		zIndex: 1,
 	},

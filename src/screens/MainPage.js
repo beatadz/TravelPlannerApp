@@ -13,16 +13,13 @@ import {
 } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 import { useIsFocused } from "@react-navigation/native";
-
+import { API_URL, MAIN_PAGE_IMAGE } from "../constants";
 import TripCard from "../components/TripCard";
-
-const API_URL = "http://192.168.0.100:7093/api";
 
 const MainPage = ({ route }) => {
 	const { userId, navigation } = route.params;
 	const [loadedTrips, setLoadedTrips] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
-	console.log(userId);
 	const isFocused = useIsFocused();
 
 	useEffect(() => {
@@ -58,7 +55,7 @@ const MainPage = ({ route }) => {
 			const response = await fetch(`${API_URL}/trips/all?userId=${userId}`); //tymczasowo
 
 			if (!response.ok) {
-				throw new Error("Nie udało się pobrać wycieczek.");
+				throw new Error("Failed to download tours.");
 			}
 
 			const responseData = await response.json();
@@ -78,7 +75,7 @@ const MainPage = ({ route }) => {
 			},
 		});
 		if (!response.ok) {
-			throw new Error("Nie udało się dodać wycieczki.");
+			throw new Error("Failed to add tour.");
 		}
 	}
 
@@ -91,58 +88,16 @@ const MainPage = ({ route }) => {
 		fetchTripsHandler();
 	}
 
-	async function editTripHandler(trip) {
-		const response = await fetch(`${API_URL}/trips/update`, {
-			method: "PUT",
-			body: JSON.stringify(trip),
-			headers: {
-				"Content-Type": "application/json",
-			},
-		});
-		if (!response.ok) {
-			throw new Error("Nie udało się zaktualizować wycieczki.");
-		}
-	}
-
-	async function onEditHandler(trip) {
-		try {
-			await editTripHandler(trip);
-		} catch (error) {
-			alert(error.message);
-		}
-		fetchTripsHandler();
-	}
-
-	async function deleteTripHandler(id) {
-		const response = await fetch(`${API_URL}/trips/delete/${id}`, {
-			method: "DELETE",
-		});
-		if (!response.ok) {
-			throw new Error("Nie udało się usunąć wycieczki.");
-		}
-	}
-
-	async function onDeleteHandler(id) {
-		try {
-			await deleteTripHandler(id);
-		} catch (error) {
-			alert(error.message);
-		}
-		fetchTripsHandler();
-	}
+	const [isTripDeleted, setIsTripDeleted] = useState(false);
 
 	useEffect(() => {
 		fetchTripsHandler();
-	}, [fetchTripsHandler]);
-
-	// useEffect(() => {
-	// 	console.log(loadedTrips);
-	// }, [loadedTrips]);
+		setIsTripDeleted(false);
+	}, [fetchTripsHandler, isTripDeleted]);
 
 	const currentDate = new Date();
 
 	let userPastTrips = loadedTrips.map((trip) => {
-		const startDate = new Date(trip.startDate);
 		const endDate = new Date(trip.endDate);
 		if (currentDate > endDate) {
 			return (
@@ -158,6 +113,7 @@ const MainPage = ({ route }) => {
 					country={trip.country}
 					navigation={navigation}
 					photoUrl={trip.photoUrl}
+					setIsTripDeleted={setIsTripDeleted}
 				/>
 			);
 		}
@@ -165,7 +121,6 @@ const MainPage = ({ route }) => {
 
 	let userFutureTrips = loadedTrips.map((trip) => {
 		const startDate = new Date(trip.startDate);
-		const endDate = new Date(trip.endDate);
 		if (currentDate < startDate) {
 			return (
 				<TripCard
@@ -181,6 +136,7 @@ const MainPage = ({ route }) => {
 					navigation={navigation}
 					activities={trip.activities}
 					photoUrl={trip.photoUrl}
+					setIsTripDeleted={setIsTripDeleted}
 				/>
 			);
 		}
@@ -204,6 +160,7 @@ const MainPage = ({ route }) => {
 					navigation={navigation}
 					activities={trip.activities}
 					photoUrl={trip.photoUrl}
+					setIsTripDeleted={setIsTripDeleted}
 				/>
 			);
 		}
@@ -219,10 +176,6 @@ const MainPage = ({ route }) => {
 		userPastTrips = userPastTrips.filter(function (element) {
 			return element !== undefined;
 		});
-	}, [userFutureTrips, userOngoingTrips, userPastTrips]);
-
-	useEffect(() => {
-		console.log(userOngoingTrips);
 	}, [userFutureTrips, userOngoingTrips, userPastTrips]);
 
 	const FutureTripsComponent = () => {
@@ -295,7 +248,7 @@ const MainPage = ({ route }) => {
 				<ImageBackground
 					style={styles.headerImageIconStyle}
 					source={{
-						uri: "https://cdn.pixabay.com/photo/2020/03/31/11/59/sunrise-4987384__340.jpg",
+						uri: MAIN_PAGE_IMAGE,
 					}}
 				>
 					<Text style={styles.myTripsText}>My Trips</Text>
