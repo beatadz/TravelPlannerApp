@@ -52,7 +52,7 @@ const MainPage = ({ route }) => {
 
 	const fetchTripsHandler = useCallback(async () => {
 		try {
-			const response = await fetch(`${API_URL}/trips/all?userId=${userId}`); //tymczasowo
+			const response = await fetch(`${API_URL}/trips/all?userId=${userId}`);
 
 			if (!response.ok) {
 				throw new Error("Failed to download tours.");

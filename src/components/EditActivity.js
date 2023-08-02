@@ -32,7 +32,7 @@ const EditActivity = ({ route }) => {
 	return (
 		<View style={styles.container}>
 			<View style={styles.addContainer}>
-				<Text style={styles.headers}>Add new activity</Text>
+				<Text style={styles.headers}>Edit activity</Text>
 				<Text style={styles.label}>Day</Text>
 				<TextInput
 					keyboardType="numeric"

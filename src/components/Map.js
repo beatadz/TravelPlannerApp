@@ -42,7 +42,7 @@ const Map = ({ navigation, tripId, coordinate }) => {
 			},
 		});
 		if (!response.ok) {
-			throw new Error("Failed to add space.");
+			throw new Error("Failed to add place.");
 		}
 	}
 
@@ -114,14 +114,7 @@ const styles = StyleSheet.create({
 	},
 	addPlace: {
 		minHeight: 70,
-	},
-	headers: {
-		color: "black",
-		fontSize: 30,
-		fontWeight: "bold",
-		marginLeft: "5%",
-		marginTop: "5%",
-		zIndex: 1000,
+		zIndex: 1,
 	},
 	roundButton: {
 		width: 60,
@@ -131,7 +124,6 @@ const styles = StyleSheet.create({
 		borderRadius: 100,
 		backgroundColor: "#FF9A18",
 		fontWeight: "bold",
-		zIndex: 100,
 
 		shadowColor: "#000",
 		shadowOffset: {
@@ -154,7 +146,6 @@ const styles = StyleSheet.create({
 	map: {
 		flex: 1,
 		marginTop: -70,
-		zIndex: 1,
 	},
 });
 

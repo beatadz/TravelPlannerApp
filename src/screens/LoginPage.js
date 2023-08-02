@@ -174,7 +174,7 @@ const LoginPage = ({ navigation }) => {
 								setHasUserGotAnAccount(false);
 							}}
 						>
-							Sing up
+							Sign up
 						</Text>
 					</View>
 				</>
@@ -211,7 +211,7 @@ const LoginPage = ({ navigation }) => {
 					</View>
 					<View style={styles.button}>
 						<Button
-							title="SING UP"
+							title="SIGN UP"
 							titleStyle={{ fontWeight: "bold", fontSize: 20 }}
 							buttonStyle={{
 								borderWidth: 0,
@@ -246,7 +246,7 @@ const LoginPage = ({ navigation }) => {
 								setHasUserGotAnAccount(true);
 							}}
 						>
-							Sing in
+							Sign in
 						</Text>
 					</View>
 				</>

@@ -28,7 +28,6 @@ const AddTrip = ({ route }) => {
 	const [startDateButtonText, setStartDateButtonText] = useState("Start date");
 	const [endDateButtonText, setEndDateButtonText] = useState("End date");
 	const [placeId, setPlaceId] = useState("");
-	const [fullAddress, setFullAddress] = useState("");
 	const [photoReference, setPhotoReference] = useState("");
 	const [loadedPhoto, setLoadedPhoto] = useState([]);
 
@@ -82,12 +81,11 @@ const AddTrip = ({ route }) => {
 
 	const fetchGooglePlacesPhotos = async (photoReference) => {
 		const url = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${photoReference}&key=${process.env.REACT_APP_API_KEY}`;
-
 		try {
 			const response = await fetch(url);
 
 			if (!response.ok) {
-				throw new Error("Nie udało się pobrać zdjęcia.");
+				throw new Error("Failed to download photo.");
 			}
 			setLoadedPhoto(JSON.stringify(response.url));
 		} catch (error) {
@@ -108,7 +106,6 @@ const AddTrip = ({ route }) => {
 								onPress={(data, details) => {
 									setCoordinate(details.geometry.location);
 									const address = details.formatted_address.split(", ");
-									setFullAddress(details.formatted_address);
 									setCity(address[0]);
 									setCountry(address[address.length - 1]);
 									setPlaceId(details.place_id);

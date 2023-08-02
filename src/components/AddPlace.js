@@ -9,19 +9,67 @@ import {
 	TouchableOpacity,
 	ToastAndroid,
 	Alert,
+	PermissionsAndroid,
 } from "react-native";
 import { useState } from "react";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import MapView, { Marker } from "react-native-maps";
+import Geolocation from "react-native-geolocation-service";
 
-const AddTrip = ({ route }) => {
+const AddPlace = ({ route }) => {
 	const { onAddHandler, navigation, tripId, region } = route.params;
 
 	const [coordinate, setCoordinate] = useState("");
 	const [placeId, setPlaceId] = useState("");
 	const [openMap, setOpenMap] = useState(false);
 	const [openSelect, setOpenSelect] = useState(false);
+	const [openAddCurrentLocation, setOpenAddCurrentLocation] = useState(false);
 	const [placeName, setPlaceName] = useState("");
+
+	const requestLocationPermission = async () => {
+		try {
+			const granted = await PermissionsAndroid.request(
+				PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+				{
+					title: "Geolocation Permission",
+					message: "Allow this app to access device's location?",
+					buttonNeutral: "Ask Me Later",
+					buttonNegative: "Cancel",
+					buttonPositive: "OK",
+				}
+			);
+			if (granted === "granted") {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (err) {
+			console.log(err);
+			return false;
+		}
+	};
+
+	const getLocation = () => {
+		const result = requestLocationPermission();
+		if (result) {
+			try {
+				Geolocation.getCurrentPosition(
+					(position) => {
+						setCoordinate({
+							lat: position.coords.latitude,
+							lng: position.coords.longitude,
+						});
+					},
+					(error) => {
+						console.log(error.code, error.message);
+					},
+					{ enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+				);
+			} catch (err) {
+				console.log(err);
+			}
+		}
+	};
 
 	const addPlace = () => {
 		const placeToAdd = {
@@ -41,10 +89,10 @@ const AddTrip = ({ route }) => {
 	return (
 		<View style={styles.container}>
 			<View style={styles.addContainer}>
-				{!openMap && !openSelect && (
+				{!openMap && !openSelect && !openAddCurrentLocation && (
 					<Text style={styles.headers}>Add new favorite place</Text>
 				)}
-				{!openMap && !openSelect && (
+				{!openMap && !openSelect && !openAddCurrentLocation && (
 					<>
 						<View style={styles.mapButton}>
 							<TouchableOpacity
@@ -57,7 +105,6 @@ const AddTrip = ({ route }) => {
 								<Text style={styles.text}>Select on map</Text>
 							</TouchableOpacity>
 						</View>
-						<Text style={styles.orText}>or</Text>
 						<View style={styles.mapButton}>
 							<TouchableOpacity
 								activeOpacity={0.95}
@@ -67,6 +114,18 @@ const AddTrip = ({ route }) => {
 								}}
 							>
 								<Text style={styles.text}>Find your favorite place</Text>
+							</TouchableOpacity>
+						</View>
+						<View style={styles.mapButton}>
+							<TouchableOpacity
+								activeOpacity={0.95}
+								style={styles.button}
+								onPress={() => {
+									getLocation();
+									setOpenAddCurrentLocation(true);
+								}}
+							>
+								<Text style={styles.text}>Add your current location</Text>
 							</TouchableOpacity>
 						</View>
 					</>
@@ -137,6 +196,24 @@ const AddTrip = ({ route }) => {
 							style={styles.inputStyle}
 							placeholderTextColor="#787878"
 							inputMode="text"
+							cursorColor="#0073ff"
+							value={placeName}
+							onChangeText={(text) => {
+								setPlaceName(text);
+							}}
+							maxLength={25}
+						/>
+					</>
+				)}
+				{openAddCurrentLocation && (
+					<>
+						<Text style={styles.label}>Place Name*</Text>
+						<TextInput
+							keyboardType="text"
+							placeholder="Enter a place name"
+							style={styles.inputStyle}
+							placeholderTextColor="#787878"
+							inputMode="text"
 							cursorColor="0073ff"
 							value={placeName}
 							onChangeText={(text) => {
@@ -146,20 +223,23 @@ const AddTrip = ({ route }) => {
 						/>
 					</>
 				)}
-				{openMap || openSelect ? (
+				{openMap || openSelect || openAddCurrentLocation ? (
 					<View style={styles.defaultButtonsContainer}>
 						<TouchableOpacity
 							activeOpacity={0.95}
 							style={styles.button}
 							onPress={() => {
-								if (openMap || openSelect) {
+								if (openMap || openSelect || openAddCurrentLocation) {
 									setOpenMap(false);
 									setOpenSelect(false);
+									setOpenAddCurrentLocation(false);
 								} else navigation.goBack(null);
 							}}
 						>
 							<Text style={styles.text}>
-								{openMap || openSelect ? "Back" : "Close"}
+								{openMap || openSelect || openAddCurrentLocation
+									? "Back"
+									: "Close"}
 							</Text>
 						</TouchableOpacity>
 						<TouchableOpacity
@@ -186,14 +266,17 @@ const AddTrip = ({ route }) => {
 							activeOpacity={0.95}
 							style={styles.button}
 							onPress={() => {
-								if (openMap || openSelect) {
+								if (openMap || openSelect || openAddCurrentLocation) {
 									setOpenMap(false);
 									setOpenSelect(false);
+									setOpenAddCurrentLocation(false);
 								} else navigation.goBack(null);
 							}}
 						>
 							<Text style={styles.text}>
-								{openMap || openSelect ? "Back" : "Close"}
+								{openMap || openSelect || openAddCurrentLocation
+									? "Back"
+									: "Close"}
 							</Text>
 						</TouchableOpacity>
 					</View>
@@ -312,4 +395,4 @@ const styles = StyleSheet.create({
 	},
 });
 
-export default AddTrip;
+export default AddPlace;

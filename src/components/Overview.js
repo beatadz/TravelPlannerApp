@@ -21,7 +21,7 @@ const Overview = ({ tripId, navigation, tripDescription }) => {
 			);
 
 			if (!response.ok) {
-				throw new Error("Failed to download tasks.");
+				throw new Error("Failed to download activities.");
 			}
 
 			const responseData = await response.json();
